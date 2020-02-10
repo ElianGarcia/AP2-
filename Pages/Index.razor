@@ -1,0 +1,131 @@
+﻿@page "/"
+
+@using ArticlesApp.Models
+@using ArticlesApp.Controllers
+
+<h3>Registro de Articulos</h3>
+
+<EditForm Model="@articulos" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="form-group">
+        <label for="Id"> Id</label>
+        <InputNumber @bind-Value="articulos.Id" class="form-group"></InputNumber>
+        <ValidationMessage For="@(()=>articulos.Id)"></ValidationMessage>
+
+        <button class="btn btn-primary" @onclick="Buscar">Buscar </button>
+
+    </div>
+    <div class="form-group">
+        <label for="Fecha"> Fecha</label>
+        <InputDate @bind-Value="articulos.Fecha" class="form-group"></InputDate>
+        <ValidationMessage For="@(()=>articulos.Fecha)"></ValidationMessage>
+
+    </div>
+    <div class="form-group">
+        <label for="Descripcion"> Descripcion</label>
+        <InputText @bind-Value="articulos.Descripcion" class="form-group"></InputText>
+        <ValidationMessage For="@(()=>articulos.Descripcion)"></ValidationMessage>
+
+    </div>
+    <div class="form-group">
+        <label for="Costo"> Costo</label>
+        <InputNumber @bind-Value="articulos.Costo" @oninput="Calcular" class="form-group"></InputNumber>
+        <ValidationMessage For="@(()=>articulos.Costo)"></ValidationMessage>
+
+    </div>
+    <div class="form-group">
+        <label for="Ganancia"> %Ganancia</label>
+        <InputNumber @bind-Value="articulos.Ganancia" @oninput="Calcular" class="form-group"></InputNumber>
+        <ValidationMessage For="@(()=>articulos.Ganancia)"></ValidationMessage>
+
+    </div>
+    <div class="form-group">
+        <label for="Precio"> Precio</label>
+        <InputNumber @bind-Value="articulos.Precio" class="form-group"></InputNumber>
+        <ValidationMessage For="@(()=>articulos.Precio)"></ValidationMessage>
+
+    </div>
+
+    <p for="mensaje">@mensaje</p>
+
+    <button class="btn btn-primary" @onclick="Limpiar">Nuevo</button>
+    <button type="submit" class="btn btn-primary" @onclick="Guardar">Guardar</button>
+    <button class="btn btn-primary" @onclick="Eliminar">Eliminar</button>
+
+
+</EditForm>
+
+@code {
+    private Articulos articulos = new Articulos();
+    private string mensaje;
+
+
+    private void Limpiar()
+    {
+        articulos = new Articulos();
+        articulos.Id = 0;
+        articulos.Fecha = DateTime.Now;
+        articulos.Costo = 0;
+        articulos.Descripcion = string.Empty;
+        articulos.Precio = 0;
+        mensaje = string.Empty;
+    }
+
+
+    private void Guardar()
+    {
+
+        ArticulosController registroController = new ArticulosController();
+        if (registroController.Buscar(articulos.Id) != null)
+        {
+            registroController.Modificar(articulos);
+        }
+
+        else
+        {
+
+            Calcular();
+            registroController.Guardar(articulos);
+
+            mensaje = "Guardado Exitosamente";
+            this.articulos = new Articulos();
+            Limpiar();
+
+        }
+
+    }
+    private void Calcular()
+    {
+        articulos.Precio = (articulos.Costo * articulos.Ganancia / 100) + articulos.Costo;
+
+    }
+
+    public void Buscar()
+    {
+        ArticulosController articulosController = new ArticulosController();
+        if (articulosController.Buscar(articulos.Id) != null)
+        {
+            articulos = articulosController.Buscar(articulos.Id);
+            articulos.Fecha = articulos.Fecha;
+            articulos.Costo = articulos.Costo;
+            articulos.Descripcion = articulos.Descripcion;
+            articulos.Ganancia = articulos.Ganancia;
+            articulos.Precio = articulos.Precio;
+
+        }
+    }
+
+    public void Eliminar()
+    {
+        ArticulosController articulosController = new ArticulosController();
+        if (articulos.Id > 0)
+        {
+            articulosController.Eliminar(articulos.Id);
+            mensaje = "Eliminado Exitosamente";
+            Limpiar();
+
+        }
+    }
+
+}
